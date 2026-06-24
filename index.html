@@ -1,10 +1,209 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Desert Roots AI</title>
+  <meta charset="UTF-8" />
+  <title>Desert Roots Landscape Planner</title>
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#f6f3ec; color:#1f2d1f; }
+    header { padding:18px 28px; background:#123f22; color:white; display:flex; justify-content:space-between; align-items:center; }
+    .app { display:grid; grid-template-columns:280px 1fr 280px; gap:14px; padding:14px; }
+    .panel { background:white; border-radius:14px; padding:14px; box-shadow:0 2px 10px #0001; }
+    input, select, button { padding:10px; border-radius:8px; border:1px solid #ccc; }
+    button { background:#2f6b3a; color:white; border:none; cursor:pointer; }
+    .plant-card { display:flex; gap:10px; padding:10px; border:1px solid #ddd; border-radius:12px; margin-bottom:10px; cursor:grab; }
+    .plant-card img { width:70px; height:70px; object-fit:cover; border-radius:8px; }
+    .season button { background:#eee; color:#222; margin-right:8px; }
+    .season .active { background:#2f6b3a; color:white; }
+    #grid { display:grid; grid-template-columns:repeat(28,24px); grid-template-rows:repeat(18,24px); width:max-content; position:relative; border:3px solid #8b7a55; margin-top:14px; }
+    .cell { width:24px; height:24px; border:1px solid #ffffff66; box-sizing:border-box; }
+    .full { background:#f4b23b88; }
+    .partial { background:#d7c85f88; }
+    .shade { background:#6fa8dc88; }
+    .house { position:absolute; left:250px; top:130px; width:190px; height:120px; background:#b46b32; border:4px solid #4c2e16; color:white; z-index:2; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+    .plant { position:absolute; border-radius:50%; background:#2f6b3acc; color:white; display:flex; align-items:center; justify-content:center; font-size:11px; text-align:center; z-index:4; border:2px solid #163d20; }
+    .footprint { position:absolute; background:#fff06688; border:2px dashed #987600; z-index:3; pointer-events:none; }
+    .small { font-size:12px; color:#555; }
+  </style>
 </head>
-<body style="font-family: Arial; padding: 40px;">
-  <h1>Desert Roots AI Landscape Planner</h1>
-  <p>If you can see this, GitHub Pages is working.</p>
+
+<body>
+<header>
+  <h2>🌵 Desert Roots Landscape Planner</h2>
+  <div>Phase 1 Prototype</div>
+</header>
+
+<div class="app">
+  <aside class="panel">
+    <h3>Plant Inventory</h3>
+    <div id="plantList"></div>
+  </aside>
+
+  <main class="panel">
+    <label>Customer Address</label><br>
+    <input style="width:70%" placeholder="12345 N Dove Mountain Blvd, Marana, AZ">
+
+    <br><br>
+    <label>HOA</label><br>
+    <select>
+      <option>Dove Mountain</option>
+      <option>Gladden Farms</option>
+      <option>Continental Ranch</option>
+      <option>Rancho Vistoso</option>
+      <option>Saguaro Bloom</option>
+      <option>Not Sure</option>
+    </select>
+
+    <br><br>
+    <div class="season">
+      <strong>Seasonal Sun Analysis</strong><br><br>
+      <button class="active" onclick="setSeason('summer', this)">Summer</button>
+      <button onclick="setSeason('winter', this)">Winter</button>
+    </div>
+
+    <p class="small">Click a plant, then click the yard grid to place it. Yellow shows mature footprint. Slider shows growth over time.</p>
+
+    <div id="grid"></div>
+
+    <h3>Top-Down Growth Preview</h3>
+    <input type="range" min="0" max="15" value="0" oninput="setGrowth(this.value)" style="width:100%">
+    <p><strong id="yearLabel">Today</strong></p>
+  </main>
+
+  <aside class="panel">
+    <h3>Selected Plant</h3>
+    <div id="details"></div>
+    <hr>
+    <h3>Design Summary</h3>
+    <p>Total plants: <strong id="count">0</strong></p>
+    <p>Estimated water use: <strong>Low</strong></p>
+    <button style="width:100%">Request Quote</button>
+  </aside>
+</div>
+
+<script>
+const plants = [
+  {id:"SG-104", name:"Saguaro", price:425, sun:"full", water:"very low", w:15, h:40, img:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=300"},
+  {id:"TS-201", name:"Texas Sage", price:38, sun:"full", water:"low", w:5, h:5, img:"https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=300"},
+  {id:"RY-302", name:"Red Yucca", price:34, sun:"full", water:"low", w:3, h:3, img:"https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=300"},
+  {id:"AG-220", name:"Agave Americana", price:95, sun:"full", water:"very low", w:8, h:6, img:"https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=300"},
+  {id:"LA-118", name:"Lantana", price:24, sun:"full", water:"medium", w:3, h:2, img:"https://images.unsplash.com/photo-1468327768560-75b778cbb551?w=300"}
+];
+
+let selected = plants[0];
+let placed = [];
+let season = "summer";
+let growthYear = 0;
+
+function renderPlantList(){
+  document.getElementById("plantList").innerHTML = plants.map(p => `
+    <div class="plant-card" onclick="selectPlant('${p.id}')">
+      <img src="${p.img}">
+      <div>
+        <strong>${p.name}</strong><br>
+        <span class="small">☀ ${p.sun} | 💧 ${p.water}</span><br>
+        <span class="small">Mature: ${p.h}' H x ${p.w}' W</span><br>
+        <strong>$${p.price}</strong>
+      </div>
+    </div>
+  `).join("");
+}
+
+function selectPlant(id){
+  selected = plants.find(p => p.id === id);
+  renderDetails();
+}
+
+function renderDetails(){
+  document.getElementById("details").innerHTML = `
+    <img src="${selected.img}" style="width:100%;height:150px;object-fit:cover;border-radius:10px">
+    <h3>${selected.name}</h3>
+    <p>Inventory #: ${selected.id}</p>
+    <p>Price: $${selected.price}</p>
+    <p>Sun: ${selected.sun}</p>
+    <p>Water: ${selected.water}</p>
+    <p>Mature size: ${selected.h}' high x ${selected.w}' wide</p>
+  `;
+}
+
+function sunClass(x,y){
+  if(season === "summer"){
+    if(x < 9) return "full";
+    if(x < 20) return "partial";
+    return "shade";
+  } else {
+    if(y < 6) return "shade";
+    if(x < 12) return "partial";
+    return "full";
+  }
+}
+
+function renderGrid(){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = `<div class="house">HOUSE</div>`;
+
+  for(let y=0; y<18; y++){
+    for(let x=0; x<28; x++){
+      const cell = document.createElement("div");
+      cell.className = "cell " + sunClass(x,y);
+      cell.onclick = () => placePlant(x,y);
+      grid.appendChild(cell);
+    }
+  }
+
+  placed.forEach(p => {
+    const scale = growthScale(growthYear);
+    const fw = Math.max(1, p.w * scale);
+    const fh = Math.max(1, p.h * scale);
+
+    const footprint = document.createElement("div");
+    footprint.className = "footprint";
+    footprint.style.left = `${p.x*24}px`;
+    footprint.style.top = `${p.y*24}px`;
+    footprint.style.width = `${fw*24}px`;
+    footprint.style.height = `${fh*24}px`;
+    grid.appendChild(footprint);
+
+    const dot = document.createElement("div");
+    dot.className = "plant";
+    dot.style.left = `${p.x*24}px`;
+    dot.style.top = `${p.y*24}px`;
+    dot.style.width = `${Math.max(24, fw*24)}px`;
+    dot.style.height = `${Math.max(24, fh*24)}px`;
+    dot.innerText = p.name.split(" ")[0];
+    grid.appendChild(dot);
+  });
+
+  document.getElementById("count").innerText = placed.length;
+}
+
+function placePlant(x,y){
+  placed.push({...selected, x, y});
+  renderGrid();
+}
+
+function growthScale(year){
+  if(year < 2) return .25;
+  if(year < 5) return .45;
+  if(year < 10) return .7;
+  return 1;
+}
+
+function setGrowth(value){
+  growthYear = Number(value);
+  document.getElementById("yearLabel").innerText = growthYear === 0 ? "Today" : growthYear + " years";
+  renderGrid();
+}
+
+function setSeason(value, btn){
+  season = value;
+  document.querySelectorAll(".season button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderGrid();
+}
+
+renderPlantList();
+renderDetails();
+renderGrid();
+</script>
 </body>
 </html>
