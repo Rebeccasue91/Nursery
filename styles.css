@@ -1,1 +1,31 @@
-
+<style>
+    body { margin:0; font-family:Arial,sans-serif; background:#f6f3ec; color:#1f2d1f; }
+    header { padding:16px 24px; background:#123f22; color:white; display:flex; justify-content:space-between; align-items:center; }
+    .app { display:grid; grid-template-columns:300px 1fr 300px; gap:14px; padding:14px; }
+    .panel { background:white; border-radius:14px; padding:14px; box-shadow:0 2px 10px #0001; }
+    input, select, button { padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box; }
+    button { background:#2f6b3a; color:white; border:none; cursor:pointer; }
+    button.secondary { background:#eee; color:#222; }
+    button.danger { background:#9b2f2f; }
+    .plant-card { display:flex; gap:10px; padding:10px; border:1px solid #ddd; border-radius:12px; margin-bottom:10px; cursor:pointer; }
+    .plant-card.selected { border:3px solid #2f6b3a; background:#eef8ee; }
+    .plant-card img { width:70px; height:70px; object-fit:cover; border-radius:8px; }
+    .season button { background:#eee; color:#222; margin-right:6px; margin-top:6px; }
+    .season .active { background:#2f6b3a; color:white; }
+    .small { font-size:12px; color:#555; }
+    #gridWrap { overflow:auto; border:1px solid #ddd; padding:10px; border-radius:12px; background:#f1eadc; }
+    #grid { display:grid; grid-template-columns:repeat(30,24px); grid-template-rows:repeat(20,24px); width:max-content; position:relative; border:3px solid #8b7a55; }
+    .cell { width:24px; height:24px; border:1px solid #ffffff66; box-sizing:border-box; }
+    .full { background:#f4b23b88; }
+    .partial { background:#d7c85f88; }
+    .shade { background:#6fa8dc88; }
+    .house { position:absolute; left:275px; top:145px; width:190px; height:120px; background:#b46b32; border:4px solid #4c2e16; color:white; z-index:2; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+    .plant { position:absolute; border-radius:50%; background:#2f6b3acc; color:white; display:flex; align-items:center; justify-content:center; font-size:11px; text-align:center; z-index:4; border:2px solid #163d20; cursor:pointer; overflow:hidden; }
+    .plant.selected { outline:4px solid white; box-shadow:0 0 0 4px #1b73e8; }
+    .footprint { position:absolute; background:#fff06688; border:2px dashed #987600; z-index:3; pointer-events:none; border-radius:50%; }
+    .legend { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0; }
+    .legend span { display:inline-flex; align-items:center; gap:5px; font-size:12px; }
+    .box { width:16px; height:16px; display:inline-block; border:1px solid #999; }
+    .north { float:right; background:#123f22; color:white; padding:8px; border-radius:50%; font-weight:bold; }
+    .quote-row { display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:6px 0; font-size:14px; }
+  </style>
