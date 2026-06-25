@@ -26,44 +26,6 @@ function setSeason(value, btn){
   renderGrid();
 }
 
-function deleteSelected(){
-  if(!selectedPlacedId){
-    alert("Click a placed plant on the grid first.");
-    return;
-  }
-  placed = placed.filter(p => p.placeId !== selectedPlacedId);
-  selectedPlacedId = null;
-  renderGrid();
-}
-
-function resetDesign(){
-  if(confirm("Clear the entire design?")){
-    placed = [];
-    selectedPlacedId = null;
-    renderGrid();
-  }
-}
-
-function updateSummary(){
-  document.getElementById("count").innerText = placed.length;
-
-  const total = placed.reduce((sum,p) => sum + p.price, 0);
-  document.getElementById("total").innerText = "$" + total.toLocaleString();
-
-  const counts = {};
-  placed.forEach(p => counts[p.name] = (counts[p.name] || 0) + 1);
-
-  document.getElementById("quoteList").innerHTML = Object.keys(counts).map(name => {
-    const plant = plants.find(p => p.name === name);
-    return `
-      <div class="quote-row">
-        <span>${counts[name]} × ${name}</span>
-        <strong>$${(counts[name] * plant.price).toLocaleString()}</strong>
-      </div>
-    `;
-  }).join("");
-}
-
 renderPlantList();
 renderDetails();
 renderGrid();
