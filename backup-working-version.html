@@ -1,1 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Acacia Nursery Landscape Planner</title>
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#f6f3ec; color:#1f2d1f; }
+    header { padding:16px 24px; background:#123f22; color:white; display:flex; justify-content:space-between; align-items:center; }
+    .app { display:grid; grid-template-columns:300px 1fr 300px; gap:14px; padding:14px; }
+    .panel { background:white; border-radius:14px; padding:14px; box-shadow:0 2px 10px #0001; }
+    input, select, button { padding:10px; border-radius:8px; border:1px solid #ccc; box-sizing:border-box; }
+    button { background:#2f6b3a; color:white; border:none; cursor:pointer; }
+    button.secondary { background:#eee; color:#222; }
+    button.danger { background:#9b2f2f; }
+    .plant-card { display:flex; gap:10px; padding:10px; border:1px solid #ddd; border-radius:12px; margin-bottom:10px; cursor:pointer; }
+    .plant-card.selected { border:3px solid #2f6b3a; background:#eef8ee; }
+    .plant-card img { width:70px; height:70px; object-fit:cover; border-radius:8px; }
+    .season button { background:#eee; color:#222; margin-right:6px; margin-top:6px; }
+    .season .active { background:#2f6b3a; color:white; }
+    .small { font-size:12px; color:#555; }
+    #gridWrap { overflow:auto; border:1px solid #ddd; padding:10px; border-radius:12px; background:#f1eadc; }
+    #grid { display:grid; grid-template-columns:repeat(30,24px); grid-template-rows:repeat(20,24px); width:max-content; position:relative; border:3px solid #8b7a55; }
+    .cell { width:24px; height:24px; border:1px solid #ffffff66; box-sizing:border-box; }
+    .full { background:#f4b23b88; }
+    .partial { background:#d7c85f88; }
+    .shade { background:#6fa8dc88; }
+    .house { position:absolute; left:275px; top:145px; width:190px; height:120px; background:#b46b32; border:4px solid #4c2e16; color:white; z-index:2; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+    .plant { position:absolute; border-radius:50%; background:#2f6b3acc; color:white; display:flex; align-items:center; justify-content:center; font-size:11px; text-align:center; z-index:4; border:2px solid #163d20; cursor:pointer; overflow:hidden; }
+    .plant.selected { outline:4px solid white; box-shadow:0 0 0 4px #1b73e8; }
+    .footprint { position:absolute; background:#fff06688; border:2px dashed #987600; z-index:3; pointer-events:none; border-radius:50%; }
+    .legend { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0; }
+    .legend span { display:inline-flex; align-items:center; gap:5px; font-size:12px; }
+    .box { width:16px; height:16px; display:inline-block; border:1px solid #999; }
+    .north { float:right; background:#123f22; color:white; padding:8px; border-radius:50%; font-weight:bold; }
+    .quote-row { display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:6px 0; font-size:14px; }
+  </style>
+</head>
 
+<body>
+<header>
+  <h2>🌵 Acacia Nursery Landscape Planner</h2>
+  <div>Phase 1B Prototype</div>
+</header>
+
+<div class="app">
+  <aside class="panel">
+    <h3>Plant Inventory</h3>
+
+    <input id="search" placeholder="Search plants..." style="width:100%" oninput="renderPlantList()">
+
+    <select id="category" style="width:100%; margin-top:8px;" onchange="renderPlantList()">
+      <option value="All">All Categories</option>
+      <option value="Cactus">Cactus</option>
+      <option value="Shrub">Shrub</option>
+      <option value="Agave">Agave</option>
+      <option value="Tree">Tree</option>
+      <option value="Groundcover">Groundcover</option>
+    </select>
+
+    <p class="small">Select a plant, then click the grid to place it.</p>
+    <div id="plantList"></div>
+  </aside>
+
+  <main class="panel">
+    <label>Project Name</label><br>
+    <input id="projectName" style="width:40%" placeholder="Smith front yard">
+
+    <br><br>
+    <label>Customer Address</label><br>
+    <input style="width:70%" placeholder="12345 N Dove Mountain Blvd, Marana, AZ">
+
+    <br><br>
+    <label>HOA</label><br>
+    <select>
+      <option>Dove Mountain</option>
+      <option>Gladden Farms</option>
+      <option>Continental Ranch</option>
+      <option>Rancho Vistoso</option>
+      <option>Saguaro Bloom</option>
+      <option>Not Sure</option>
+    </select>
+
+    <br><br>
+    <div class="season">
+      <strong>Seasonal Sun Analysis</strong>
+      <button class="active" onclick="setSeason('summer', this)">Summer</button>
+      <button onclick="setSeason('winter', this)">Winter</button>
+      <button onclick="setSeason('year', this)">Year-Round</button>
+    </div>
+
+    <div class="legend">
+      <span><i class="box full"></i> Full Sun</span>
+      <span><i class="box partial"></i> Partial Sun</span>
+      <span><i class="box shade"></i> Shade</span>
+      <span><i class="box" style="background:#fff06688"></i> Mature Footprint</span>
+      <span class="north">N ↑</span>
+    </div>
+
+    <div id="gridWrap">
+      <div id="grid"></div>
+    </div>
+
+    <h3>Top-Down Growth Preview</h3>
+    <input type="range" min="0" max="15" value="0" oninput="setGrowth(this.value)" style="width:100%">
+    <p><strong id="yearLabel">Today</strong></p>
+
+    <button class="danger" onclick="deleteSelected()">Delete Selected Plant</button>
+    <button class="secondary" onclick="resetDesign()">Reset Design</button>
+  </main>
+
+  <aside class="panel">
+    <h3>Selected Plant</h3>
+    <div id="details"></div>
+
+    <hr>
+
+    <h3>Design Summary</h3>
+    <p>Total plants: <strong id="count">0</strong></p>
+    <p>Estimated total: <strong id="total">$0</strong></p>
+
+    <div id="quoteList"></div>
+
+    <br>
+    <button style="width:100%" onclick="alert('Quote request feature coming next!')">Request Quote</button>
+  </aside>
+</div>
+
+<script>
+const plants = [
+  {id:"SG-104", name:"Saguaro", category:"Cactus", price:425, qty:3, sun:"full", water:"very low", w:10, h:35, img:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=300"},
+  {id:"TS-201", name:"Texas Sage", category:"Shrub", price:38, qty:24, sun:"full", water:"low", w:5, h:5, img:"https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=300"},
+  {id:"RY-302", name:"Red Yucca", category:"Shrub", price:34, qty:18, sun:"full", water:"low", w:3, h:3, img:"https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=300"},
+  {id:"AG-220", name:"Agave Americana", category:"Agave", price:95, qty:9, sun:"full", water:"very low", w:8, h:6, img:"https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=300"},
+  {id:"LA-118", name:"Lantana", category:"Groundcover", price:24, qty:30, sun:"full", water:"medium", w:3, h:2, img:"https://images.unsplash.com/photo-1468327768560-75b778cbb551?w=300"},
+  {id:"PV-401", name:"Palo Verde", category:"Tree", price:185, qty:5, sun:"full", water:"low", w:25, h:25, img:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300"},
+  {id:"DW-411", name:"Desert Willow", category:"Tree", price:145, qty:7, sun:"full", water:"low", w:20, h:25, img:"https://images.unsplash.com/photo-1520412099551-62b6bafeb5bb?w=300"}
+];
+
+let selected = plants[0];
+let selectedPlacedId = null;
+let placed = [];
+let season = "summer";
+let growthYear = 0;
+
+function renderPlantList(){
+  const search = document.getElementById("search").value.toLowerCase();
+  const category = document.getElementById("category").value;
+
+  const filtered = plants.filter(p =>
+    (category === "All" || p.category === category) &&
+    p.name.toLowerCase().includes(search)
+  );
+
+  document.getElementById("plantList").innerHTML = filtered.map(p => `
+    <div class="plant-card ${selected.id === p.id ? 'selected' : ''}" onclick="selectPlant('${p.id}')">
+      <img src="${p.img}">
+      <div>
+        <strong>${p.name}</strong><br>
+        <span class="small">${p.category} | Qty: ${p.qty}</span><br>
+        <span class="small">☀ ${p.sun} | 💧 ${p.water}</span><br>
+        <span class="small">Mature: ${p.h}' H x ${p.w}' W</span><br>
+        <strong>$${p.price}</strong>
+      </div>
+    </div>
+  `).join("");
+}
+
+function selectPlant(id){
+  selected = plants.find(p => p.id === id);
+  selectedPlacedId = null;
+  renderPlantList();
+  renderDetails();
+  renderGrid();
+}
+
+function renderDetails(){
+  document.getElementById("details").innerHTML = `
+    <img src="${selected.img}" style="width:100%;height:150px;object-fit:cover;border-radius:10px">
+    <h3>${selected.name}</h3>
+    <p>Inventory #: ${selected.id}</p>
+    <p>Category: ${selected.category}</p>
+    <p>Price: $${selected.price}</p>
+    <p>Available: ${selected.qty}</p>
+    <p>Sun: ${selected.sun}</p>
+    <p>Water: ${selected.water}</p>
+    <p>Mature size: ${selected.h}' high x ${selected.w}' wide</p>
+  `;
+}
+
+function sunClass(x,y){
+  if(season === "summer"){
+    if(x < 10) return "full";
+    if(x < 22) return "partial";
+    return "shade";
+  }
+  if(season === "winter"){
+    if(y < 7) return "shade";
+    if(x < 14) return "partial";
+    return "full";
+  }
+  if(x < 9) return "full";
+  if(x < 22) return "partial";
+  return "shade";
+}
+
+function renderGrid(){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = `<div class="house">HOUSE</div>`;
+
+  for(let y=0; y<20; y++){
+    for(let x=0; x<30; x++){
+      const cell = document.createElement("div");
+      cell.className = "cell " + sunClass(x,y);
+      cell.onclick = () => placePlant(x,y);
+      grid.appendChild(cell);
+    }
+  }
+
+  placed.forEach(p => {
+    const scale = growthScale(growthYear);
+    const fw = Math.max(1.2, p.w * scale);
+    const fh = Math.max(1.2, p.h * scale);
+
+    const footprint = document.createElement("div");
+    footprint.className = "footprint";
+    footprint.style.left = `${p.x*24}px`;
+    footprint.style.top = `${p.y*24}px`;
+    footprint.style.width = `${fw*24}px`;
+    footprint.style.height = `${fh*24}px`;
+    grid.appendChild(footprint);
+
+    const dot = document.createElement("div");
+    dot.className = `plant ${selectedPlacedId === p.placeId ? 'selected' : ''}`;
+    dot.style.left = `${p.x*24}px`;
+    dot.style.top = `${p.y*24}px`;
+    dot.style.width = `${Math.max(28, fw*24)}px`;
+    dot.style.height = `${Math.max(28, fh*24)}px`;
+    dot.innerText = p.name.split(" ")[0];
+    dot.onclick = (event) => {
+      event.stopPropagation();
+      selectedPlacedId = p.placeId;
+      selected = plants.find(item => item.id === p.id);
+      renderPlantList();
+      renderDetails();
+      renderGrid();
+    };
+    grid.appendChild(dot);
+  });
+
+  updateSummary();
+}
+
+function placePlant(x,y){
+  placed.push({...selected, x, y, placeId: Date.now() + Math.random()});
+  renderGrid();
+}
+
+function growthScale(year){
+  if(year < 2) return .25;
+  if(year < 5) return .45;
+  if(year < 10) return .7;
+  if(year < 15) return .9;
+  return 1;
+}
+
+function setGrowth(value){
+  growthYear = Number(value);
+  document.getElementById("yearLabel").innerText = growthYear === 0 ? "Today" : growthYear + " years";
+  renderGrid();
+}
+
+function setSeason(value, btn){
+  season = value;
+  document.querySelectorAll(".season button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderGrid();
+}
+
+function deleteSelected(){
+  if(!selectedPlacedId){
+    alert("Click a placed plant on the grid first.");
+    return;
+  }
+  placed = placed.filter(p => p.placeId !== selectedPlacedId);
+  selectedPlacedId = null;
+  renderGrid();
+}
+
+function resetDesign(){
+  if(confirm("Clear the entire design?")){
+    placed = [];
+    selectedPlacedId = null;
+    renderGrid();
+  }
+}
+
+function updateSummary(){
+  document.getElementById("count").innerText = placed.length;
+
+  const total = placed.reduce((sum,p) => sum + p.price, 0);
+  document.getElementById("total").innerText = "$" + total.toLocaleString();
+
+  const counts = {};
+  placed.forEach(p => counts[p.name] = (counts[p.name] || 0) + 1);
+
+  document.getElementById("quoteList").innerHTML = Object.keys(counts).map(name => {
+    const plant = plants.find(p => p.name === name);
+    return `
+      <div class="quote-row">
+        <span>${counts[name]} × ${name}</span>
+        <strong>$${(counts[name] * plant.price).toLocaleString()}</strong>
+      </div>
+    `;
+  }).join("");
+}
+
+renderPlantList();
+renderDetails();
+renderGrid();
+</script>
+</body>
+</html>
