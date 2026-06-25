@@ -13,7 +13,6 @@ function sunClass(x,y){
   if(x < 22) return "partial";
   return "shade";
 }
-
 function renderGrid(){
   const grid = document.getElementById("grid");
   grid.innerHTML = `<div class="house">HOUSE</div>`;
@@ -25,8 +24,6 @@ function renderGrid(){
       cell.onclick = () => placePlant(x,y);
       grid.appendChild(cell);
     }
-  }
-
   placed.forEach(p => {
     const scale = growthScale(growthYear);
     const fw = Math.max(1.2, p.w * scale);
@@ -81,7 +78,6 @@ function resetDesign(){
     selectedPlacedId = null;
     renderGrid();
   }
-}
 
 function updateSummary(){
   document.getElementById("count").innerText = placed.length;
