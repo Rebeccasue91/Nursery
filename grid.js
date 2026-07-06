@@ -64,8 +64,27 @@ dot.ondragstart = (event) => startDragPlacedPlant(event, p.placeId);
 }
 
 function placePlant(x,y){
-  placed.push({...selected, x, y, placeId: Date.now() + Math.random()});
+  const candidate = {...selected, x, y, placeId: Date.now() + Math.random()};
+
+  if(hasCollision(candidate)){
+    alert("That plant is too close to another plant at mature size.");
+    return;
+  }
+
+  placed.push(candidate);
   renderGrid();
+}
+function hasCollision(candidate, ignorePlaceId = null){
+  return placed.some(existing => {
+    if(existing.placeId === ignorePlaceId) return false;
+
+    return (
+      candidate.x < existing.x + existing.w &&
+      candidate.x + candidate.w > existing.x &&
+      candidate.y < existing.y + existing.h &&
+      candidate.y + candidate.h > existing.y
+    );
+  });
 }
 function dropPlant(event, x, y){
   event.preventDefault();
@@ -76,18 +95,41 @@ function dropPlant(event, x, y){
     const plant = plants.find(p => p.id === data.id);
     if(!plant) return;
 
+    const candidate = {...plant, x, y, placeId: Date.now() + Math.random()};
+
+    if(hasCollision(candidate)){
+      alert("That plant is too close to another plant at mature size.");
+      return;
+    }
+
     selected = plant;
-    placed.push({...plant, x, y, placeId: Date.now() + Math.random()});
+    placed.push(candidate);
   }
 
   if(data.type === "placed"){
     const plant = placed.find(p => p.placeId === data.placeId);
     if(!plant) return;
 
+    const oldX = plant.x;
+    const oldY = plant.y;
+
     plant.x = x;
     plant.y = y;
+
+    if(hasCollision(plant, plant.placeId)){
+      plant.x = oldX;
+      plant.y = oldY;
+      alert("That move would crowd another plant at mature size.");
+      return;
+    }
+
     selectedPlacedId = plant.placeId;
   }
+
+  renderPlantList();
+  renderDetails();
+  renderGrid();
+}
 
   renderPlantList();
   renderDetails();
