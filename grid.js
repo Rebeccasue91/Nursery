@@ -14,6 +14,9 @@ function sunClass(x,y){
   return "shade";
 }
 function renderGrid(){
+  dot.innerText = p.name.split(" ")[0];
+  dot.draggable = true;
+dot.ondragstart = (event) => startDragPlacedPlant(event, p.placeId);
   const grid = document.getElementById("grid");
   grid.innerHTML = `<div class="house">HOUSE</div>`;
 
@@ -67,13 +70,24 @@ function placePlant(x,y){
 function dropPlant(event, x, y){
   event.preventDefault();
 
-  const plantId = event.dataTransfer.getData("text/plain");
-  const plant = plants.find(p => p.id === plantId);
+  const data = JSON.parse(event.dataTransfer.getData("text/plain"));
 
-  if(!plant) return;
+  if(data.type === "inventory"){
+    const plant = plants.find(p => p.id === data.id);
+    if(!plant) return;
 
-  selected = plant;
-  placed.push({...plant, x, y, placeId: Date.now() + Math.random()});
+    selected = plant;
+    placed.push({...plant, x, y, placeId: Date.now() + Math.random()});
+  }
+
+  if(data.type === "placed"){
+    const plant = placed.find(p => p.placeId === data.placeId);
+    if(!plant) return;
+
+    plant.x = x;
+    plant.y = y;
+    selectedPlacedId = plant.placeId;
+  }
 
   renderPlantList();
   renderDetails();
@@ -114,4 +128,14 @@ function updateSummary(){
       </div>
     `;
   }).join("");
+}
+function startDragPlacedPlant(event, placeId){
+  event.stopPropagation();
+
+  event.dataTransfer.setData("text/plain", JSON.stringify({
+    type: "placed",
+    placeId: placeId
+  }));
+
+  event.dataTransfer.effectAllowed = "move";
 }
