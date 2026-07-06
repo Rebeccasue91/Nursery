@@ -71,6 +71,10 @@ function placePlant(x,y){
     return;
   }
 
+  if(!confirmSunWarning(candidate, x, y)){
+    return;
+  }
+
   placed.push(candidate);
   renderGrid();
 }
@@ -101,7 +105,9 @@ function dropPlant(event, x, y){
       alert("That plant is too close to another plant at mature size.");
       return;
     }
-
+    if(!confirmSunWarning(candidate, x, y)){
+    return;
+  }
     selected = plant;
     placed.push(candidate);
   }
@@ -122,7 +128,28 @@ function dropPlant(event, x, y){
       alert("That move would crowd another plant at mature size.");
       return;
     }
+  function isSunCompatible(plant, x, y){
+  const zone = sunClass(x, y);
 
+  if(plant.sun === "full" && zone === "shade") return false;
+  if(plant.sun === "partial" && zone === "full") return false;
+  if(plant.sun === "shade" && zone !== "shade") return false;
+
+  return true;
+}
+
+function confirmSunWarning(plant, x, y){
+  if(isSunCompatible(plant, x, y)) return true;
+
+  const zone = sunClass(x, y);
+
+  return confirm(
+    `${plant.name} may not be ideal here.\n\n` +
+    `Plant prefers: ${plant.sun} sun\n` +
+    `This grid area is: ${zone}\n\n` +
+    `Place it anyway?`
+  );
+}
     selectedPlacedId = plant.placeId;
   }
 
