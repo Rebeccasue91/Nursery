@@ -22,6 +22,8 @@ function renderGrid(){
       const cell = document.createElement("div");
       cell.className = "cell " + sunClass(x,y);
       cell.onclick = () => placePlant(x,y);
+      cell.ondragover = (event) => event.preventDefault();
+      cell.ondrop = (event) => dropPlant(event, x, y);
       grid.appendChild(cell);
     }
   placed.forEach(p => {
@@ -60,6 +62,21 @@ function renderGrid(){
 
 function placePlant(x,y){
   placed.push({...selected, x, y, placeId: Date.now() + Math.random()});
+  renderGrid();
+}
+function dropPlant(event, x, y){
+  event.preventDefault();
+
+  const plantId = event.dataTransfer.getData("text/plain");
+  const plant = plants.find(p => p.id === plantId);
+
+  if(!plant) return;
+
+  selected = plant;
+  placed.push({...plant, x, y, placeId: Date.now() + Math.random()});
+
+  renderPlantList();
+  renderDetails();
   renderGrid();
 }
 function deleteSelected(){
