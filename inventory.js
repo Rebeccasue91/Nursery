@@ -8,7 +8,12 @@ function renderPlantList(){
   );
 
   document.getElementById("plantList").innerHTML = filtered.map(p => `
-    <div class="plant-card ${selected.id === p.id ? 'selected' : ''}" onclick="selectPlant('${p.id}')">
+    <div 
+  class="plant-card ${selected.id === p.id ? 'selected' : ''}" 
+  onclick="selectPlant('${p.id}')"
+  draggable="true"
+  ondragstart="startDragPlant(event, '${p.id}')"
+>
       <img src="${p.img}">
       <div>
         <strong>${p.name}</strong><br>
@@ -41,4 +46,11 @@ function renderDetails(){
     <p>Water: ${selected.water}</p>
     <p>Mature size: ${selected.h}' high x ${selected.w}' wide</p>
   `;
+}
+function startDragPlant(event, id){
+  selected = plants.find(p => p.id === id);
+  event.dataTransfer.setData("text/plain", id);
+  event.dataTransfer.effectAllowed = "copy";
+  renderPlantList();
+  renderDetails();
 }
