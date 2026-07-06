@@ -49,8 +49,14 @@ function renderDetails(){
 }
 function startDragPlant(event, id){
   selected = plants.find(p => p.id === id);
-  event.dataTransfer.setData("text/plain", id);
+
+  event.dataTransfer.setData("text/plain", JSON.stringify({
+    type: "inventory",
+    id: id
+  }));
+
   event.dataTransfer.effectAllowed = "copy";
+
   renderPlantList();
   renderDetails();
 }
