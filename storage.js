@@ -5,7 +5,8 @@ function saveDesign() {
     hoa: document.getElementById("hoa").value,
     season,
     growthYear,
-    placed
+    placed,
+    propertyProfile
   };
 
   localStorage.setItem("desertRootsDesign", JSON.stringify(design));
@@ -30,6 +31,10 @@ function loadDesign() {
   growthYear = design.growthYear || 0;
   placed = design.placed || [];
 
+  if (design.propertyProfile) {
+    propertyProfile = design.propertyProfile;
+  }
+
   document.getElementById("growthSlider").value = growthYear;
   document.getElementById("yearLabel").innerText =
     growthYear === 0 ? "Today" : growthYear + " years";
@@ -38,5 +43,7 @@ function loadDesign() {
   renderPlantList();
   renderDetails();
 
+  alert("Design loaded.");
+}
   alert("Design loaded.");
 }
