@@ -29,7 +29,32 @@
     </select>
 
     <p class="small">Drag a plant onto the grid, or click a plant and then click the grid.</p>
+  <hr>
 
+<h3>Nursery Pick</h3>
+
+<label>Plant Type</label>
+<select id="nurseryPickType">
+  <option>Flowering Shrub</option>
+  <option>Privacy Shrub</option>
+  <option>Cactus Accent</option>
+  <option>Agave Accent</option>
+  <option>Groundcover</option>
+  <option>Shade Tree</option>
+</select>
+
+<label>Starting Size</label>
+<select id="nurseryPickSize">
+  <option>1 gallon</option>
+  <option>3/5 gallon</option>
+  <option>10/15 gallon</option>
+  <option>25 gallon</option>
+  <option>Nursery recommendation</option>
+</select>
+
+<button onclick="createNurseryPickPlant()">Use Nursery Pick</button>
+
+<hr>
     <div id="plantList"></div>
   </aside>
 
@@ -118,6 +143,7 @@
 <script src="grid.js"></script>
 <script src="storage.js"></script>
 <script src="quote.js"></script>
+<script src="nursery.js"></script>
 <script src="app.js"></script>
 
 </body>
