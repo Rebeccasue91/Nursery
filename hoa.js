@@ -1,27 +1,32 @@
 const hoaRules = {
   "Dove Mountain": {
-    approvedCategories: ["Cactus", "Shrub", "Agave", "Tree", "Groundcover"],
-    notes: "Use desert-adapted, low-water plants. Final approval should be confirmed with the HOA."
+    approvedPlantIds: ["SG-104", "TS-201", "RY-302", "AG-220", "LA-118", "PV-401", "DW-411", "GB-510", "DS-610", "FD-720"],
+    notes: "Prototype rule set: desert-adapted, low-water plants are shown as compatible. Final HOA approval should be verified."
   },
+
   "Gladden Farms": {
-    approvedCategories: ["Cactus", "Shrub", "Agave", "Tree", "Groundcover"],
-    notes: "Low-water desert landscaping is generally appropriate. Final approval should be confirmed."
+    approvedPlantIds: ["SG-104", "TS-201", "RY-302", "AG-220", "LA-118", "PV-401", "DW-411", "GB-510", "DS-610", "FD-720"],
+    notes: "Prototype rule set: low-water desert landscaping is shown as compatible. Final HOA approval should be verified."
   },
+
   "Continental Ranch": {
-    approvedCategories: ["Cactus", "Shrub", "Agave", "Tree", "Groundcover"],
-    notes: "Arid-climate plants are preferred. Confirm final plant list with HOA."
+    approvedPlantIds: ["SG-104", "TS-201", "RY-302", "AG-220", "LA-118", "PV-401", "DW-411", "GB-510", "DS-610", "FD-720"],
+    notes: "Prototype rule set: arid-climate plants are shown as compatible. Final HOA approval should be verified."
   },
+
   "Rancho Vistoso": {
-    approvedCategories: ["Cactus", "Shrub", "Agave", "Tree"],
-    notes: "Desert-adapted plants are preferred. Some groundcovers may require approval."
+    approvedPlantIds: ["SG-104", "TS-201", "RY-302", "AG-220", "PV-401", "DW-411", "GB-510", "DS-610", "FD-720"],
+    notes: "Prototype rule set: most desert trees, cactus, agaves, and shrubs are shown as compatible. Some groundcovers may need verification."
   },
+
   "Saguaro Bloom": {
-    approvedCategories: ["Cactus", "Shrub", "Agave", "Tree", "Groundcover"],
-    notes: "Use low-water plants compatible with Marana desert landscaping."
+    approvedPlantIds: ["SG-104", "TS-201", "RY-302", "AG-220", "LA-118", "PV-401", "DW-411", "GB-510", "DS-610", "FD-720"],
+    notes: "Prototype rule set: low-water plants compatible with Marana desert landscaping are shown as compatible."
   },
+
   "Not Sure": {
-    approvedCategories: ["Cactus", "Shrub", "Agave", "Tree", "Groundcover"],
-    notes: "HOA not selected. Recommendations should be verified before installation."
+    approvedPlantIds: ["SG-104", "TS-201", "RY-302", "AG-220", "LA-118", "PV-401", "DW-411", "GB-510", "DS-610", "FD-720"],
+    notes: "HOA not selected. Plant recommendations should be verified before installation."
   }
 };
 
@@ -32,5 +37,11 @@ function getCurrentHoaRule() {
 
 function isHoaCompatible(plant) {
   const rule = getCurrentHoaRule();
-  return rule.approvedCategories.includes(plant.category);
+  return rule.approvedPlantIds.includes(plant.id);
+}
+
+function handleHoaChange() {
+  renderPlantList();
+  renderDetails();
+  renderGrid();
 }
