@@ -76,6 +76,8 @@ function renderGrid() {
 }
 
 function placePlant(x, y) {
+  if (!selected) return;
+
   const candidate = {
     ...selected,
     x,
@@ -85,6 +87,10 @@ function placePlant(x, y) {
 
   if (hasCollision(candidate)) {
     alert("That plant is too close to another plant at mature size.");
+    return;
+  }
+
+  if (!confirmHoaWarning(candidate)) {
     return;
   }
 
@@ -115,8 +121,10 @@ function dropPlant(event, x, y) {
   event.preventDefault();
 
   const rawData = event.dataTransfer.getData("text/plain");
+  if (!rawData) return;
 
   let data;
+
   try {
     data = JSON.parse(rawData);
   } catch {
@@ -136,6 +144,10 @@ function dropPlant(event, x, y) {
 
     if (hasCollision(candidate)) {
       alert("That plant is too close to another plant at mature size.");
+      return;
+    }
+
+    if (!confirmHoaWarning(candidate)) {
       return;
     }
 
@@ -162,6 +174,12 @@ function dropPlant(event, x, y) {
       plant.x = oldX;
       plant.y = oldY;
       alert("That move would crowd another plant at mature size.");
+      return;
+    }
+
+    if (!confirmHoaWarning(plant)) {
+      plant.x = oldX;
+      plant.y = oldY;
       return;
     }
 
@@ -216,6 +234,19 @@ function confirmSunWarning(plant, x, y) {
     `${plant.name} may not be ideal here.\n\n` +
     `Plant prefers: ${plant.sun} sun\n` +
     `This grid area is: ${zone}\n\n` +
+    `Place it anyway?`
+  );
+}
+
+function confirmHoaWarning(plant) {
+  if (typeof isHoaCompatible !== "function") return true;
+  if (isHoaCompatible(plant)) return true;
+
+  const hoa = document.getElementById("hoa").value;
+
+  return confirm(
+    `${plant.name} may not be approved for ${hoa}.\n\n` +
+    `This prototype is using placeholder HOA rules, so final approval should still be verified.\n\n` +
     `Place it anyway?`
   );
 }
