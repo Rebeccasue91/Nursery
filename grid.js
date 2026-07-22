@@ -22,7 +22,19 @@ function footprintSize(plant) {
 
 function renderGrid() {
   const grid = document.getElementById("grid");
-  grid.innerHTML = `<div class="house">HOUSE</div>`;
+  grid.innerHTML = `
+  <div 
+    class="house"
+    style="
+      left:${propertyProfile.houseLeft}px;
+      top:${propertyProfile.houseTop}px;
+      width:${propertyProfile.houseWidth}px;
+      height:${propertyProfile.houseHeight}px;
+    "
+  >
+    ${propertyProfile.label}
+  </div>
+`;
 
   for (let y = 0; y < 20; y++) {
     for (let x = 0; x < 30; x++) {
