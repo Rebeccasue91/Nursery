@@ -2,20 +2,21 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Desert Roots Landscape Planner</title>
+  <title>Acacia Nursery Landscape Planner</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 <header>
-  <h2>🌵 Desert Roots Landscape Planner</h2>
+  <h2>🌵 Acacia Nursery Landscape Planner</h2>
   <div>Landscape CAD Prototype</div>
 </header>
 
 <div class="app">
 
   <aside class="panel">
-    <h3>Plant Inventory</h3>
+    <h3>Customer Pick</h3>
+    <p class="small">Browse the inventory and drag exact plants onto the grid.</p>
 
     <input id="search" placeholder="Search plants..." oninput="renderPlantList()">
 
@@ -28,11 +29,12 @@
       <option value="Groundcover">Groundcover</option>
     </select>
 
-    <p class="small">Drag a plant onto the grid, or click a plant and then click the grid.</p>
+    <div id="plantList"></div>
 
     <hr>
 
     <h3>Nursery Pick</h3>
+    <p class="small">Use this when the customer wants Acacia Nursery to choose the exact plants.</p>
 
     <label>Plant Type</label>
     <select id="nurseryPickType">
@@ -54,10 +56,6 @@
     </select>
 
     <button onclick="createNurseryPickPlant()">Use Nursery Pick</button>
-
-    <hr>
-
-    <div id="plantList"></div>
   </aside>
 
   <main class="panel">
@@ -129,13 +127,8 @@
 
     <br>
 
-    <button class="quote-button" onclick="requestQuote()">
-      Request Quote
-    </button>
-
-    <button class="secondary" onclick="printDesign()">
-      Print Design
-    </button>
+    <button class="quote-button" onclick="requestQuote()">Request Quote</button>
+    <button class="secondary" onclick="printDesign()">Print Design</button>
   </aside>
 
 </div>
