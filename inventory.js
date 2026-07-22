@@ -1,3 +1,11 @@
+function plantHoaStatus(plant) {
+  if (typeof isHoaCompatible !== "function") {
+    return "HOA status unknown";
+  }
+
+  return isHoaCompatible(plant) ? "✅ HOA compatible" : "⚠️ Verify HOA approval";
+}
+
 function renderPlantList() {
   const search = document.getElementById("search").value.toLowerCase();
   const category = document.getElementById("category").value;
@@ -20,6 +28,7 @@ function renderPlantList() {
         <span class="small">${p.category} | Qty: ${p.qty}</span><br>
         <span class="small">☀ ${p.sun} | 💧 ${p.water}</span><br>
         <span class="small">Mature: ${p.h}' H x ${p.w}' W</span><br>
+        <span class="small">${plantHoaStatus(p)}</span><br>
         <strong>$${p.price}</strong>
       </div>
     </div>
@@ -36,6 +45,8 @@ function selectPlant(id) {
 }
 
 function renderDetails() {
+  const hoaRule = typeof getCurrentHoaRule === "function" ? getCurrentHoaRule() : null;
+
   document.getElementById("details").innerHTML = `
     <img src="${selected.img}" style="width:100%;height:150px;object-fit:cover;border-radius:10px">
     <h3>${selected.name}</h3>
@@ -46,6 +57,8 @@ function renderDetails() {
     <p>Sun: ${selected.sun}</p>
     <p>Water: ${selected.water}</p>
     <p>Mature size: ${selected.h}' high x ${selected.w}' wide</p>
+    <p><strong>${plantHoaStatus(selected)}</strong></p>
+    <p class="small">${hoaRule ? hoaRule.notes : ""}</p>
   `;
 }
 
