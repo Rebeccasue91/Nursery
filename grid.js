@@ -2,6 +2,8 @@ const GRID_COLS = 30;
 const GRID_ROWS = 20;
 const CELL_SIZE = 24;
 
+let moveMode = false;
+
 function sunClass(x, y) {
   if (season === "summer") {
     if (x < 10) return "full";
@@ -25,9 +27,7 @@ function footprintSize(plant) {
 }
 
 function getPropertyProfile() {
-  if (typeof propertyProfile !== "undefined") {
-    return propertyProfile;
-  }
+  if (typeof propertyProfile !== "undefined") return propertyProfile;
 
   return {
     houseLeft: 275,
@@ -44,24 +44,19 @@ function renderGrid() {
 
   grid.innerHTML = "";
 
-  grid.ondragover = event => event.preventDefault();
-  grid.ondrop = event => {
-    event.preventDefault();
-
-    const rect = grid.getBoundingClientRect();
-    const x = Math.floor((event.clientX - rect.left) / CELL_SIZE);
-    const y = Math.floor((event.clientY - rect.top) / CELL_SIZE);
-
-    if (x < 0 || y < 0 || x >= GRID_COLS || y >= GRID_ROWS) return;
-
-    dropPlant(event, x, y);
-  };
-
   for (let y = 0; y < GRID_ROWS; y++) {
     for (let x = 0; x < GRID_COLS; x++) {
       const cell = document.createElement("div");
       cell.className = "cell " + sunClass(x, y);
-      cell.onclick = () => placePlant(x, y);
+
+      cell.onclick = () => {
+        if (moveMode && selectedPlacedId) {
+          moveSelectedPlantTo(x, y);
+        } else {
+          placePlant(x, y);
+        }
+      };
+
       grid.appendChild(cell);
     }
   }
@@ -94,9 +89,6 @@ function renderGrid() {
     dot.style.width = `${Math.max(28, size * CELL_SIZE)}px`;
     dot.style.height = `${Math.max(28, size * CELL_SIZE)}px`;
     dot.innerText = p.nurseryPick ? "Pick" : p.name.split(" ")[0];
-
-    dot.draggable = true;
-    dot.ondragstart = event => startDragPlacedPlant(event, p.placeId);
 
     dot.onclick = event => {
       event.stopPropagation();
@@ -136,86 +128,46 @@ function placePlant(x, y) {
   renderGrid();
 }
 
-function startDragPlacedPlant(event, placeId) {
-  event.stopPropagation();
+function moveSelectedPlantTo(x, y) {
+  const plant = placed.find(p => p.placeId === selectedPlacedId);
 
-  event.dataTransfer.setData(
-    "text/plain",
-    JSON.stringify({
-      type: "placed",
-      placeId: placeId
-    })
-  );
+  if (!plant) {
+    alert("Select a placed plant first.");
+    moveMode = false;
+    return;
+  }
 
-  event.dataTransfer.effectAllowed = "move";
+  const oldX = plant.x;
+  const oldY = plant.y;
+
+  plant.x = x;
+  plant.y = y;
+
+  if (hasCollision(plant, plant.placeId)) {
+    plant.x = oldX;
+    plant.y = oldY;
+    alert("That move would crowd another plant at mature size.");
+    return;
+  }
+
+  if (!confirmSunWarning(plant, x, y)) {
+    plant.x = oldX;
+    plant.y = oldY;
+    return;
+  }
+
+  moveMode = false;
+  renderGrid();
 }
 
-function dropPlant(event, x, y) {
-  const rawData = event.dataTransfer.getData("text/plain");
-  if (!rawData) return;
-
-  let data;
-
-  try {
-    data = JSON.parse(rawData);
-  } catch {
-    data = { type: "inventory", id: rawData };
+function enableMoveMode() {
+  if (!selectedPlacedId) {
+    alert("Click a placed plant first, then click Move Selected Plant.");
+    return;
   }
 
-  if (data.type === "inventory") {
-    const plant = plants.find(p => p.id === data.id);
-    if (!plant) return;
-
-    const candidate = {
-      ...plant,
-      x,
-      y,
-      placeId: Date.now() + Math.random()
-    };
-
-    if (hasCollision(candidate)) {
-      alert("That plant is too close to another plant at mature size.");
-      return;
-    }
-
-    if (!confirmHoaWarning(candidate)) return;
-    if (!confirmSunWarning(candidate, x, y)) return;
-
-    selected = plant;
-    selectedPlacedId = candidate.placeId;
-    placed.push(candidate);
-  }
-
-  if (data.type === "placed") {
-    const plant = placed.find(p => p.placeId === data.placeId);
-    if (!plant) return;
-
-    const oldX = plant.x;
-    const oldY = plant.y;
-
-    plant.x = x;
-    plant.y = y;
-
-    if (hasCollision(plant, plant.placeId)) {
-      plant.x = oldX;
-      plant.y = oldY;
-      alert("That move would crowd another plant at mature size.");
-      return;
-    }
-
-    if (!confirmHoaWarning(plant) || !confirmSunWarning(plant, x, y)) {
-      plant.x = oldX;
-      plant.y = oldY;
-      return;
-    }
-
-    selectedPlacedId = plant.placeId;
-    selected = plant.nurseryPick ? plant : plants.find(item => item.id === plant.id);
-  }
-
-  renderPlantList();
-  renderDetails();
-  renderGrid();
+  moveMode = true;
+  alert("Now click the grid square where you want to move the selected plant.");
 }
 
 function hasCollision(candidate, ignorePlaceId = null) {
@@ -286,6 +238,7 @@ function resetDesign() {
   if (confirm("Clear the entire design?")) {
     placed = [];
     selectedPlacedId = null;
+    moveMode = false;
     renderGrid();
   }
 }
