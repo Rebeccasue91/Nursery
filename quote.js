@@ -3,23 +3,38 @@ function buildQuoteText() {
   const address = document.getElementById("address").value || "No address entered";
   const hoa = document.getElementById("hoa").value || "Not specified";
 
-  const total = placed.reduce((sum, plant) => sum + plant.price, 0);
+  const exactPlantTotal = placed
+    .filter(plant => !plant.nurseryPick)
+    .reduce((sum, plant) => sum + plant.price, 0);
 
   const counts = {};
+
   placed.forEach(plant => {
-    if (!counts[plant.name]) {
-      counts[plant.name] = {
+    const key = plant.nurseryPick
+      ? `${plant.name} (${plant.requestedSize || "size TBD"})`
+      : plant.name;
+
+    if (!counts[key]) {
+      counts[key] = {
         qty: 0,
-        price: plant.price
+        price: plant.price,
+        nurseryPick: plant.nurseryPick
       };
     }
-    counts[plant.name].qty++;
+
+    counts[key].qty++;
   });
 
   let plantList = "";
 
   Object.keys(counts).forEach(name => {
-    plantList += `${counts[name].qty} x ${name} - $${counts[name].qty * counts[name].price}\n`;
+    const item = counts[name];
+
+    if (item.nurseryPick) {
+      plantList += `${item.qty} x ${name} - Price TBD by nursery\n`;
+    } else {
+      plantList += `${item.qty} x ${name} - $${(item.qty * item.price).toLocaleString()}\n`;
+    }
   });
 
   return `
@@ -34,7 +49,8 @@ Growth Preview Year: ${growthYear}
 Requested Plants:
 ${plantList || "No plants placed yet."}
 
-Estimated Plant Total: $${total.toLocaleString()}
+Estimated Exact-Plant Total: $${exactPlantTotal.toLocaleString()}
+Nursery Pick items require nursery pricing.
 
 Customer Notes:
 `;
