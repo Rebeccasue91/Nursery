@@ -1,115 +1,237 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <title>Desert Roots Landscape Planner</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f3ec;
+  color: #1f2d1f;
+}
 
-<body>
-<header>
-  <h2>🌵 Desert Roots Landscape Planner</h2>
-  <div>Landscape CAD Prototype</div>
-</header>
+header {
+  padding: 16px 24px;
+  background: #123f22;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-<div class="app">
+.app {
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  gap: 14px;
+  padding: 14px;
+}
 
-  <aside class="panel">
-    <h3>Plant Inventory</h3>
+.panel {
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
 
-    <input id="search" placeholder="Search plants..." oninput="renderPlantList()">
+input,
+select,
+button {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
 
-    <select id="category" onchange="renderPlantList()">
-      <option value="All">All Categories</option>
-      <option value="Cactus">Cactus</option>
-      <option value="Shrub">Shrub</option>
-      <option value="Agave">Agave</option>
-      <option value="Tree">Tree</option>
-      <option value="Groundcover">Groundcover</option>
-    </select>
+button {
+  background: #2f6b3a;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
 
-    <p class="small">Drag a plant onto the grid, or click a plant and then click the grid.</p>
+button.secondary {
+  background: #eeeeee;
+  color: #222;
+}
 
-    <div id="plantList"></div>
-  </aside>
+button.danger {
+  background: #9b2f2f;
+}
 
-  <main class="panel">
-    <label>Project Name</label>
-    <input id="projectName" placeholder="Smith front yard">
+.small {
+  font-size: 12px;
+  color: #555;
+}
 
-    <label>Customer Address</label>
-    <input id="address" placeholder="12345 N Dove Mountain Blvd, Marana, AZ">
+.plant-card {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  cursor: grab;
+  background: white;
+}
 
-    <label>HOA</label>
-    <select id="hoa">
-      <option>Dove Mountain</option>
-      <option>Gladden Farms</option>
-      <option>Continental Ranch</option>
-      <option>Rancho Vistoso</option>
-      <option>Saguaro Bloom</option>
-      <option>Not Sure</option>
-    </select>
+.plant-card.selected {
+  border: 3px solid #2f6b3a;
+  background: #eef8ee;
+}
 
-    <div class="season">
-      <strong>Seasonal Sun Analysis</strong><br>
-      <button class="active" onclick="setSeason('summer', this)">Summer</button>
-      <button onclick="setSeason('winter', this)">Winter</button>
-      <button onclick="setSeason('year', this)">Year-Round</button>
-    </div>
+.plant-card img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+}
 
-    <div class="legend">
-      <span><i class="box full"></i> Full Sun</span>
-      <span><i class="box partial"></i> Partial Sun</span>
-      <span><i class="box shade"></i> Shade</span>
-      <span><i class="box footprint-key"></i> Mature Footprint</span>
-      <span class="north">N ↑</span>
-    </div>
+.season button {
+  width: auto;
+  background: #eeeeee;
+  color: #222;
+  margin-right: 6px;
+}
 
-    <div id="gridWrap">
-      <div id="grid"></div>
-    </div>
+.season button.active {
+  background: #2f6b3a;
+  color: white;
+}
 
-    <h3>Top-Down Growth Preview</h3>
-    <input
-      id="growthSlider"
-      type="range"
-      min="0"
-      max="15"
-      value="0"
-      oninput="setGrowth(this.value)"
-    >
+.legend {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 10px 0;
+}
 
-    <p><strong id="yearLabel">Today</strong></p>
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
 
-    <button class="danger" onclick="deleteSelected()">Delete Selected Plant</button>
-    <button class="secondary" onclick="resetDesign()">Reset Design</button>
-  </main>
+.box {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  border: 1px solid #999;
+}
 
-  <aside class="panel">
-    <h3>Selected Plant</h3>
-    <div id="details"></div>
+.full {
+  background: rgba(244, 178, 59, 0.55);
+}
 
-    <hr>
+.partial {
+  background: rgba(215, 200, 95, 0.55);
+}
 
-    <h3>Design Summary</h3>
-    <p>Total plants: <strong id="count">0</strong></p>
-    <p>Estimated total: <strong id="total">$0</strong></p>
+.shade {
+  background: rgba(111, 168, 220, 0.55);
+}
 
-    <div id="quoteList"></div>
+.footprint-key {
+  background: rgba(255, 240, 102, 0.7);
+}
 
-    <br>
-    <button class="quote-button" onclick="alert('Quote request feature coming next!')">
-      Request Quote
-    </button>
-  </aside>
+.north {
+  margin-left: auto;
+  background: #123f22;
+  color: white;
+  padding: 8px;
+  border-radius: 50%;
+  font-weight: bold;
+}
 
-</div>
+#gridWrap {
+  overflow: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f1eadc;
+  max-height: 560px;
+}
 
-<script src="plants.js"></script>
-<script src="inventory.js"></script>
-<script src="growth.js"></script>
-<script src="grid.js"></script>
-<script src="app.js"></script>
+#grid {
+  display: grid;
+  grid-template-columns: repeat(30, 24px);
+  grid-template-rows: repeat(20, 24px);
+  width: max-content;
+  position: relative;
+  border: 3px solid #8b7a55;
+}
 
-</body>
-</html>
+.cell {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255,255,255,0.45);
+  box-sizing: border-box;
+}
+
+.house {
+  position: absolute;
+  left: 275px;
+  top: 145px;
+  width: 190px;
+  height: 120px;
+  background: #b46b32;
+  border: 4px solid #4c2e16;
+  color: white;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.plant {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(47, 107, 58, 0.8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  text-align: center;
+  z-index: 4;
+  border: 2px solid #163d20;
+  cursor: grab;
+  overflow: hidden;
+}
+
+.plant.selected {
+  outline: 4px solid white;
+  box-shadow: 0 0 0 4px #1b73e8;
+}
+
+.footprint {
+  position: absolute;
+  background: rgba(255, 240, 102, 0.55);
+  border: 2px dashed #987600;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+#growthSlider {
+  width: 100%;
+}
+
+.quote-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+@media (max-width: 1100px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  #gridWrap {
+    max-height: none;
+  }
+}
